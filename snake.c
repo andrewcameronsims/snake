@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #define DELAY 100000
+#define SNAKE "#"
 
 int max_rows;
 int max_cols;
@@ -11,7 +12,7 @@ int max_cols;
 typedef struct Node {
   int x;
   int y;
-  Node *next;
+  struct Node *next;
 } Node;
 
 typedef struct {
@@ -26,6 +27,7 @@ Snake* snake_init()
 {
   Snake *snake = (Snake*) malloc(sizeof(Snake));
   if (snake == NULL) return NULL;
+
   snake->head = NULL;
   snake->tail = NULL;
   snake->size = 0;
@@ -61,8 +63,7 @@ bool snake_dequeue(Snake *snake)
 
 bool snake_enqueue(Snake *snake, int y, int x)
 {
-  Node *new_tail;
-  new_tail = (Node*) malloc(sizeof(Node));
+  Node *new_tail = (Node*) malloc(sizeof(Node));
   if (snake == NULL || new_tail == NULL) return false;
 
   new_tail->y = y;
@@ -79,6 +80,22 @@ int snake_size(Snake *snake)
   if (snake == NULL) return 0;
   return snake->size;
 }
+
+// Snake (game logic) methods
+
+void render_snake(Snake *snake)
+{
+  Node *current_node = snake->head;
+  while (current_node != NULL)
+  {
+    mvprintw(current_node->y, current_node->x, "%c", SNAKE);
+    current_node = current_node->next;
+  }
+}
+
+void update_snake(Snake *snake, int direction);
+
+// IO functions
 
 void handle_key(int key)
 {
@@ -107,16 +124,18 @@ void handle_key(int key)
   }
 }
 
-void game_loop(void)
+void game_loop(Snake *snake)
 {
   int counter = 0;
 
   while(1)
   {
+    erase();
     usleep(DELAY);
     int key = getch();
     mvprintw(0, 0, "%d", counter);
     handle_key(key);
+    render_snake(snake);
     counter++;
   }
 }
@@ -131,6 +150,8 @@ int main(void)
   nodelay(stdscr, 1);
   getmaxyx(stdscr, max_rows, max_cols);
 
-  game_loop();
+  Snake *snake = snake_init();
+  snake_enqueue(snake, 0, 0);
+  game_loop(snake);
   return 0;
 }
