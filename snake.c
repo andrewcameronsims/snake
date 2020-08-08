@@ -6,10 +6,10 @@
 #define DELAY 100000
 #define SNAKE '#'
 
-#define DOWN 58
-#define UP 59
-#define LEFT 60
-#define RIGHT 61
+#define DOWN 258
+#define UP 259
+#define LEFT 260
+#define RIGHT 261
 
 int max_rows;
 int max_cols;
@@ -27,7 +27,7 @@ typedef struct {
   int size;
 } Snake;
 
-// Snake (queue) methods
+// Snake data structure (queue) functions
 
 Snake* snake_init()
 {
@@ -95,7 +95,7 @@ int snake_size(Snake *snake)
   return snake->size;
 }
 
-// Snake (game logic) methods
+// Snake (game logic) functions
 
 void render_snake(Snake *snake)
 {
@@ -107,7 +107,29 @@ void render_snake(Snake *snake)
   }
 }
 
-void update_snake(Snake *snake, int direction);
+void update_snake(Snake *snake)
+{
+  snake_dequeue(snake);
+  int current_y = snake->tail->y;
+  int current_x = snake->tail->x;
+  switch (snake->direction)
+  {
+  case UP:
+    snake_enqueue(snake, current_y - 1, current_x);
+    break;
+  case DOWN:
+    snake_enqueue(snake, current_y + 1, current_x);
+    break;
+  case LEFT:
+    snake_enqueue(snake, current_y, current_x - 1);
+    break;
+  case RIGHT:
+    snake_enqueue(snake, current_y, current_x + 1);
+    break;
+  default:
+    break;
+  }
+}
 
 // IO functions
 
@@ -118,8 +140,8 @@ void handle_key(int key, Snake *snake)
     endwin();
     exit(0);
   }
+  // this is where we should limit direction changes (e.g. can't turn direction from right to left or up to down)
   snake->direction = key;
-  printf("%d", snake->direction);
 }
 
 void game_init()
@@ -137,12 +159,16 @@ void game_loop()
 {
   Snake *snake = snake_init();
   snake_enqueue(snake, max_rows / 2, max_cols / 2);
+  snake_enqueue(snake, max_rows / 2, max_cols / 2 + 1);
+  snake_enqueue(snake, max_rows / 2, max_cols / 2 + 2);
 
   while(TRUE)
   {
     usleep(DELAY);
     int key = getch();
     handle_key(key, snake);
+    update_snake(snake);
+    erase();
     render_snake(snake);
   }
 }
