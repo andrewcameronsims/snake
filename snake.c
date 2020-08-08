@@ -301,6 +301,7 @@ void game_loop()
     erase();
     render_apples(apples);
     render_snake(snake);
+    mvprintw(0, 0, "|Score: %d|", score);
     bool alive = snake_alive(snake);
     if (!alive) {
       endwin();
