@@ -77,7 +77,6 @@ bool snake_enqueue(Snake *snake, int y, int x)
   new_tail->x = x;
   new_tail->next = NULL;
 
-
   if (snake->size == 0) {
     snake->tail = new_tail;
     snake->head = new_tail;
@@ -114,11 +113,13 @@ void update_snake(Snake *snake, int direction);
 
 void handle_key(int key, Snake *snake)
 {
+  if (key == -1) return;
   if (key == 'q') {
     endwin();
     exit(0);
   }
   snake->direction = key;
+  printf("%d", snake->direction);
 }
 
 void game_init()
