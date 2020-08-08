@@ -15,6 +15,8 @@
 int max_rows;
 int max_cols;
 
+int score = 0;
+
 typedef struct Node {
   int x;
   int y;
@@ -58,13 +60,13 @@ void apples_free(Apples *apples)
   free(apples);
 }
 
-bool apples_add(Apples *apples, int y, int x)
+bool apples_add(Apples *apples)
 {
   Node *new_apple = (Node*) malloc(sizeof(Node));
   if (new_apple == NULL) return false;
 
-  new_apple->y = y;
-  new_apple->x = x;
+  new_apple->y = rand() % max_rows;
+  new_apple->x = rand() % max_cols;
   new_apple->next = apples->head;
   apples->head = new_apple;
   return true;
@@ -233,7 +235,7 @@ bool snake_alive(Snake *snake)
     head_x > max_cols || head_x < 0 ||
     head_y > max_rows || head_y < 0
   ) {
-    return false;
+    return FALSE;
   }
 
   // Check that the snake has not bitten itself
@@ -243,10 +245,30 @@ bool snake_alive(Snake *snake)
     int current_x = current_node->x;
     int current_y = current_node->y;
 
-    if (current_x == head_x && current_y == head_y) return false;
+    if (current_x == head_x && current_y == head_y) return FALSE;
     current_node = current_node->next;
   }
-  return true;
+  return TRUE;
+}
+
+void feed_snake(Snake *snake, Apples *apples)
+{
+  int snake_x = snake->head->x;
+  int snake_y = snake->head->y;
+
+  Node *current_node = apples->head;
+  while (current_node != NULL)
+  {
+    int apple_x = current_node->x;
+    int apple_y = current_node->y;
+    if (snake_x == apple_x && snake_y == apple_y) {
+      apples_remove(apples, apple_y, apple_x);
+      apples_add(apples);
+      score++;
+      return;
+    }
+    current_node = current_node->next;
+  }
 }
 
 void game_init()
@@ -268,7 +290,7 @@ void game_loop()
   snake_enqueue(snake, max_rows / 2, max_cols / 2 + 2);
 
   Apples *apples = apples_init();
-  apples_add(apples, rand() % max_rows, rand() % max_cols);
+  apples_add(apples);
 
   while(TRUE)
   {
@@ -276,14 +298,15 @@ void game_loop()
     int key = getch();
     handle_key(key, snake);
     update_snake(snake);
+    erase();
+    render_apples(apples);
+    render_snake(snake);
     bool alive = snake_alive(snake);
     if (!alive) {
       endwin();
       exit(0);
     }
-    erase();
-    render_snake(snake);
-    render_apples(apples);
+    feed_snake(snake, apples);
   }
 }
 
