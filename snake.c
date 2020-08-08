@@ -4,7 +4,12 @@
 #include <stdbool.h>
 
 #define DELAY 100000
-#define SNAKE "#"
+#define SNAKE '#'
+
+#define UP 100
+#define LEFT 101
+#define DOWN 102
+#define RIGHT 103
 
 int max_rows;
 int max_cols;
@@ -68,10 +73,18 @@ bool snake_enqueue(Snake *snake, int y, int x)
 
   new_tail->y = y;
   new_tail->x = x;
+  new_tail->next = NULL;
 
-  snake->tail->next = new_tail;
-  snake->tail = new_tail;
-  snake->size++;
+
+  if (snake->size == 0) {
+    snake->tail = new_tail;
+    snake->head = new_tail;
+    snake->size++;
+  } else {
+    snake->tail->next = new_tail;
+    snake->tail = new_tail;
+    snake->size++;
+  }
   return true;
 }
 
@@ -97,7 +110,7 @@ void update_snake(Snake *snake, int direction);
 
 // IO functions
 
-void handle_key(int key)
+void handle_key(int key, Snake *snake)
 {
   erase();
   switch (key)
@@ -124,19 +137,18 @@ void handle_key(int key)
   }
 }
 
-void game_loop(Snake *snake)
+void game_loop()
 {
-  int counter = 0;
+  Snake *snake = snake_init();
+  snake_enqueue(snake, max_rows / 2, max_cols / 2);
 
-  while(1)
+  while(TRUE)
   {
-    erase();
     usleep(DELAY);
+    // erase();
     int key = getch();
-    mvprintw(0, 0, "%d", counter);
-    handle_key(key);
+    handle_key(key, snake);
     render_snake(snake);
-    counter++;
   }
 }
 
@@ -150,8 +162,6 @@ int main(void)
   nodelay(stdscr, 1);
   getmaxyx(stdscr, max_rows, max_cols);
 
-  Snake *snake = snake_init();
-  snake_enqueue(snake, 0, 0);
-  game_loop(snake);
+  game_loop();
   return 0;
 }
