@@ -121,6 +121,17 @@ void handle_key(int key, Snake *snake)
   snake->direction = key;
 }
 
+void game_init()
+{
+  initscr();
+  curs_set(0);
+  keypad(stdscr, 1);
+  noecho();
+  cbreak();
+  nodelay(stdscr, 1);
+  getmaxyx(stdscr, max_rows, max_cols);
+}
+
 void game_loop()
 {
   Snake *snake = snake_init();
@@ -137,14 +148,7 @@ void game_loop()
 
 int main(void)
 {
-  initscr();
-  curs_set(0);
-  keypad(stdscr, 1);
-  noecho();
-  cbreak();
-  nodelay(stdscr, 1);
-  getmaxyx(stdscr, max_rows, max_cols);
-
+  game_init();
   game_loop();
   return 0;
 }
