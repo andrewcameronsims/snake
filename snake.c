@@ -6,10 +6,10 @@
 #define DELAY 100000
 #define SNAKE '#'
 
-#define UP 100
-#define LEFT 101
-#define DOWN 102
-#define RIGHT 103
+#define DOWN 58
+#define UP 59
+#define LEFT 60
+#define RIGHT 61
 
 int max_rows;
 int max_cols;
@@ -23,6 +23,7 @@ typedef struct Node {
 typedef struct {
   Node *head;
   Node *tail;
+  int direction;
   int size;
 } Snake;
 
@@ -36,6 +37,7 @@ Snake* snake_init()
   snake->head = NULL;
   snake->tail = NULL;
   snake->size = 0;
+  snake->direction = RIGHT;
   return snake;
 }
 
@@ -112,29 +114,11 @@ void update_snake(Snake *snake, int direction);
 
 void handle_key(int key, Snake *snake)
 {
-  erase();
-  switch (key)
-  {
-  case KEY_LEFT:
-    mvprintw(max_rows / 2, max_cols / 2, "%s", "left");
-    break;
-
-  case KEY_UP:
-    mvprintw(max_rows / 2, max_cols / 2, "%s", "up");
-    break;
-
-  case KEY_RIGHT:
-    mvprintw(max_rows / 2, max_cols / 2, "%s", "right");
-    break;
-
-  case KEY_DOWN:
-    mvprintw(max_rows / 2, max_cols / 2, "%s", "down");
-    break;
-
-  default:
-    mvprintw(max_rows / 2, max_cols / 2, "%s", "none");
-    break;
+  if (key == 'q') {
+    endwin();
+    exit(0);
   }
+  snake->direction = key;
 }
 
 void game_loop()
@@ -145,7 +129,6 @@ void game_loop()
   while(TRUE)
   {
     usleep(DELAY);
-    // erase();
     int key = getch();
     handle_key(key, snake);
     render_snake(snake);
