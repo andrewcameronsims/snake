@@ -5,6 +5,7 @@
 
 #define DELAY 100000
 #define SNAKE '#'
+#define APPLE 'o'
 
 #define DOWN 258
 #define UP 259
@@ -26,6 +27,73 @@ typedef struct {
   int direction;
   int size;
 } Snake;
+
+typedef struct {
+  Node *head;
+} Apples;
+
+// Apples data structure functions
+
+Apples* apples_init()
+{
+  Apples *apples = (Apples*) malloc(sizeof(Apples));
+  if (apples == NULL) return NULL;
+
+  apples->head = NULL;
+  return apples;
+}
+
+void apples_free(Apples *apples)
+{
+  if (apples == NULL) return;
+
+  Node *current_node = apples->head;
+
+  while (current_node != NULL)
+  {
+    Node *node_to_free = current_node;
+    current_node = current_node->next;
+    free(node_to_free);
+  }
+  free(apples);
+}
+
+bool apples_add(Apples *apples, int y, int x)
+{
+  Node *new_apple = (Node*) malloc(sizeof(Node));
+  if (new_apple == NULL) return false;
+
+  new_apple->y = y;
+  new_apple->x = x;
+  new_apple->next = apples->head;
+  apples->head = new_apple;
+  return true;
+}
+
+bool apples_remove(Apples *apples, int y, int x)
+{
+  Node *before_node = apples->head;
+
+  if (before_node->x == x && before_node->y == y) {
+    apples->head = apples->head->next;
+    free(before_node);
+    return true;
+  }
+
+  Node *current_node = before_node->next;
+  while (current_node != NULL)
+  {
+    if (current_node->x == x && current_node->y == y) {
+      before_node->next = current_node->next;
+      free(current_node);
+      return true;
+    } else {
+      before_node = current_node;
+      current_node = current_node->next;
+    }
+  }
+  return false;
+}
 
 // Snake data structure (queue) functions
 
@@ -97,6 +165,16 @@ int snake_size(Snake *snake)
 
 // Snake (game logic) functions
 
+void render_apples(Apples *apples)
+{
+  Node *current_node = apples->head;
+  while (current_node != NULL)
+  {
+    mvprintw(current_node->y, current_node->x, "%c", APPLE);
+    current_node = current_node->next;
+  }
+}
+
 void render_snake(Snake *snake)
 {
   Node *current_node = snake->head;
@@ -144,6 +222,33 @@ void handle_key(int key, Snake *snake)
   snake->direction = key;
 }
 
+bool snake_alive(Snake *snake)
+{
+  Node *current_node = snake->head;
+  int head_x = current_node->x;
+  int head_y = current_node->y;
+
+  // Check that the snake's head is within the game screen
+  if (
+    head_x > max_cols || head_x < 0 ||
+    head_y > max_rows || head_y < 0
+  ) {
+    return false;
+  }
+
+  // Check that the snake has not bitten itself
+  current_node = current_node->next;
+  while (current_node != NULL)
+  {
+    int current_x = current_node->x;
+    int current_y = current_node->y;
+
+    if (current_x == head_x && current_y == head_y) return false;
+    current_node = current_node->next;
+  }
+  return true;
+}
+
 void game_init()
 {
   initscr();
@@ -162,14 +267,23 @@ void game_loop()
   snake_enqueue(snake, max_rows / 2, max_cols / 2 + 1);
   snake_enqueue(snake, max_rows / 2, max_cols / 2 + 2);
 
+  Apples *apples = apples_init();
+  apples_add(apples, rand() % max_rows, rand() % max_cols);
+
   while(TRUE)
   {
     usleep(DELAY);
     int key = getch();
     handle_key(key, snake);
     update_snake(snake);
+    bool alive = snake_alive(snake);
+    if (!alive) {
+      endwin();
+      exit(0);
+    }
     erase();
     render_snake(snake);
+    render_apples(apples);
   }
 }
 
