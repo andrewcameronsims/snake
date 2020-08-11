@@ -1,16 +1,4 @@
-#include <ncurses.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include "snake.h"
-#include "food.h"
-
-#define DELAY 100000
-
-int max_rows;
-int max_cols;
-
-int score = 0;
+#include "main.h"
 
 void handle_key(int key, Snake *snake)
 {
