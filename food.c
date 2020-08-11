@@ -34,6 +34,12 @@ bool food_add(Food *food, int y, int x)
   new_food->next = NULL;
 
   Node *current_node = food->head;
+  if (current_node == NULL) {
+    current_node = new_food;
+    food->head = new_food;
+    return true;
+  }
+
   while (current_node->next != NULL) current_node = current_node->next;
   current_node->next = new_food;
 

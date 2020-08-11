@@ -51,7 +51,7 @@ void game_loop()
     handle_key(key, snake);
     update_snake(snake);
     erase();
-    render_apples(food);
+    render_food(food);
     render_snake(snake);
     mvprintw(0, 0, "|Score: %d|", score);
     bool alive = snake_alive(snake, max_rows, max_cols);

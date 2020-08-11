@@ -2,7 +2,8 @@
 #define SNAKE_H
 
 #include <stdbool.h>
-
+#include <stdlib.h>
+#include <ncurses.h>
 #include "node.h"
 #include "food.h"
 
