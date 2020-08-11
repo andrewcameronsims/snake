@@ -1,8 +1,8 @@
 CC = gcc
-CFLAGS = -lncurses
+LIBS = -lncurses
 
 main: clean snake.o food.o
-	$(CC) main.c -o snake $(CFLAGS) snake.o food.o
+	$(CC) main.c -o snake $(LIBS) snake.o food.o
 
 snake.o: snake.c node.h
 	$(CC) -c snake.c
