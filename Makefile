@@ -1,4 +1,4 @@
 snake: clean
-	cc snake.c -o snake -lncurses
+	cc main.c -o snake -lncurses
 clean:
 	rm -f snake

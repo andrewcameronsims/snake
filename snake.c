@@ -1,103 +1,6 @@
-#include <ncurses.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdbool.h>
+#include <stddef.h>
 
-#define DELAY 100000
-#define SNAKE '#'
-#define APPLE 'o'
-
-#define DOWN 258
-#define UP 259
-#define LEFT 260
-#define RIGHT 261
-
-int max_rows;
-int max_cols;
-
-int score = 0;
-
-typedef struct Node {
-  int x;
-  int y;
-  struct Node *next;
-} Node;
-
-typedef struct {
-  Node *head;
-  Node *tail;
-  int direction;
-  int size;
-} Snake;
-
-typedef struct {
-  Node *head;
-} Apples;
-
-// Apples data structure functions
-
-Apples* apples_init()
-{
-  Apples *apples = (Apples*) malloc(sizeof(Apples));
-  if (apples == NULL) return NULL;
-
-  apples->head = NULL;
-  return apples;
-}
-
-void apples_free(Apples *apples)
-{
-  if (apples == NULL) return;
-
-  Node *current_node = apples->head;
-
-  while (current_node != NULL)
-  {
-    Node *node_to_free = current_node;
-    current_node = current_node->next;
-    free(node_to_free);
-  }
-  free(apples);
-}
-
-bool apples_add(Apples *apples)
-{
-  Node *new_apple = (Node*) malloc(sizeof(Node));
-  if (new_apple == NULL) return FALSE;
-
-  new_apple->y = rand() % max_rows;
-  new_apple->x = rand() % max_cols;
-  new_apple->next = apples->head;
-  apples->head = new_apple;
-  return TRUE;
-}
-
-bool apples_remove(Apples *apples, int y, int x)
-{
-  Node *before_node = apples->head;
-
-  if (before_node->x == x && before_node->y == y) {
-    apples->head = apples->head->next;
-    free(before_node);
-    return TRUE;
-  }
-
-  Node *current_node = before_node->next;
-  while (current_node != NULL)
-  {
-    if (current_node->x == x && current_node->y == y) {
-      before_node->next = current_node->next;
-      free(current_node);
-      return TRUE;
-    } else {
-      before_node = current_node;
-      current_node = current_node->next;
-    }
-  }
-  return FALSE;
-}
-
-// Snake data structure (queue) functions
+#include "snake.h"
 
 Snake* snake_init()
 {
@@ -128,20 +31,20 @@ void snake_free(Snake *snake)
 
 bool snake_dequeue(Snake *snake)
 {
-  if (snake == NULL || snake->head == NULL) return FALSE;
+  if (snake == NULL || snake->head == NULL) return false;
 
   Node *old_head = snake->head;
   snake->head = snake->head->next;
 
   free(old_head);
   snake->size--;
-  return TRUE;
+  return true;
 }
 
 bool snake_enqueue(Snake *snake, int y, int x)
 {
   Node *new_tail = (Node*) malloc(sizeof(Node));
-  if (snake == NULL || new_tail == NULL) return FALSE;
+  if (snake == NULL || new_tail == NULL) return false;
 
   new_tail->y = y;
   new_tail->x = x;
@@ -156,7 +59,7 @@ bool snake_enqueue(Snake *snake, int y, int x)
     snake->tail = new_tail;
     snake->size++;
   }
-  return TRUE;
+  return true;
 }
 
 int snake_size(Snake *snake)
@@ -165,66 +68,7 @@ int snake_size(Snake *snake)
   return snake->size;
 }
 
-// Snake (game logic) functions
-
-void render_apples(Apples *apples)
-{
-  Node *current_node = apples->head;
-  while (current_node != NULL)
-  {
-    mvprintw(current_node->y, current_node->x, "%c", APPLE);
-    current_node = current_node->next;
-  }
-}
-
-void render_snake(Snake *snake)
-{
-  Node *current_node = snake->head;
-  while (current_node != NULL)
-  {
-    mvprintw(current_node->y, current_node->x, "%c", SNAKE);
-    current_node = current_node->next;
-  }
-}
-
-void update_snake(Snake *snake)
-{
-  snake_dequeue(snake);
-  int current_y = snake->tail->y;
-  int current_x = snake->tail->x;
-  switch (snake->direction)
-  {
-  case UP:
-    snake_enqueue(snake, current_y - 1, current_x);
-    break;
-  case DOWN:
-    snake_enqueue(snake, current_y + 1, current_x);
-    break;
-  case LEFT:
-    snake_enqueue(snake, current_y, current_x - 1);
-    break;
-  case RIGHT:
-    snake_enqueue(snake, current_y, current_x + 1);
-    break;
-  default:
-    break;
-  }
-}
-
-// IO functions
-
-void handle_key(int key, Snake *snake)
-{
-  if (key == -1) return;
-  if (key == 'q') {
-    endwin();
-    exit(0);
-  }
-  // this is where we should limit direction changes (e.g. can't turn direction from right to left or up to down)
-  snake->direction = key;
-}
-
-bool snake_alive(Snake *snake)
+bool snake_alive(Snake *snake, int y_limit, int x_limit)
 {
   Node *current_node = snake->head;
   int head_x = current_node->x;
@@ -232,10 +76,10 @@ bool snake_alive(Snake *snake)
 
   // Check that the snake's head is within the game screen
   if (
-    head_x > max_cols || head_x < 0 ||
-    head_y > max_rows || head_y < 0
+    head_x > x_limit || head_x < 0 ||
+    head_y > y_limit || head_y < 0
   ) {
-    return FALSE;
+    return false;
   }
 
   // Check that the snake has not bitten itself
@@ -245,10 +89,10 @@ bool snake_alive(Snake *snake)
     int current_x = current_node->x;
     int current_y = current_node->y;
 
-    if (current_x == head_x && current_y == head_y) return FALSE;
+    if (current_x == head_x && current_y == head_y) return false;
     current_node = current_node->next;
   }
-  return TRUE;
+  return true;
 }
 
 void grow_snake(Snake *snake)
@@ -279,7 +123,7 @@ void grow_snake(Snake *snake)
   }
 }
 
-void feed_snake(Snake *snake, Apples *apples)
+void feed_snake(Snake *snake, Food *food, int *score, int y_limit, int x_limit)
 {
   int snake_x = snake->head->x;
   int snake_y = snake->head->y;
@@ -302,16 +146,15 @@ void feed_snake(Snake *snake, Apples *apples)
     break;
   }
 
-  Node *current_node = apples->head;
+  Node *current_node = food->head;
   while (current_node != NULL)
   {
-    int apple_x = current_node->x;
-    int apple_y = current_node->y;
-    if (snake_x == apple_x && snake_y == apple_y) {
-      apples_remove(apples, apple_y, apple_x);
-      apples_add(apples);
+    int food_x = current_node->x;
+    int food_y = current_node->y;
+    if (snake_x == food_x && snake_y == food_y) {
+      food_remove(food, food_y, food_x);
+      food_add(food, rand() % y_limit, rand() % x_limit);
       grow_snake(snake);
-      // snake_enqueue(snake, apple_y, apple_x);
       score++;
       return;
     }
@@ -319,49 +162,36 @@ void feed_snake(Snake *snake, Apples *apples)
   }
 }
 
-void game_init()
+void render_snake(Snake *snake)
 {
-  initscr();
-  curs_set(0);
-  keypad(stdscr, 1);
-  noecho();
-  cbreak();
-  nodelay(stdscr, 1);
-  getmaxyx(stdscr, max_rows, max_cols);
-}
-
-void game_loop()
-{
-  Snake *snake = snake_init();
-  snake_enqueue(snake, max_rows / 2, max_cols / 2);
-  snake_enqueue(snake, max_rows / 2, max_cols / 2 + 1);
-  snake_enqueue(snake, max_rows / 2, max_cols / 2 + 2);
-
-  Apples *apples = apples_init();
-  apples_add(apples);
-
-  while(TRUE)
+  Node *current_node = snake->head;
+  while (current_node != NULL)
   {
-    usleep(DELAY);
-    int key = getch();
-    handle_key(key, snake);
-    update_snake(snake);
-    erase();
-    render_apples(apples);
-    render_snake(snake);
-    mvprintw(0, 0, "|Score: %d|", score);
-    bool alive = snake_alive(snake);
-    if (!alive) {
-      endwin();
-      exit(0);
-    }
-    feed_snake(snake, apples);
+    mvprintw(current_node->y, current_node->x, "%c", SNAKE_CHAR);
+    current_node = current_node->next;
   }
 }
 
-int main(void)
+void update_snake(Snake *snake)
 {
-  game_init();
-  game_loop();
-  return 0;
+  snake_dequeue(snake);
+  int current_y = snake->tail->y;
+  int current_x = snake->tail->x;
+  switch (snake->direction)
+  {
+  case UP:
+    snake_enqueue(snake, current_y - 1, current_x);
+    break;
+  case DOWN:
+    snake_enqueue(snake, current_y + 1, current_x);
+    break;
+  case LEFT:
+    snake_enqueue(snake, current_y, current_x - 1);
+    break;
+  case RIGHT:
+    snake_enqueue(snake, current_y, current_x + 1);
+    break;
+  default:
+    break;
+  }
 }
