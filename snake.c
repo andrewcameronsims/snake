@@ -167,7 +167,9 @@ void render_snake(Snake *snake)
   Node *current_node = snake->head;
   while (current_node != NULL)
   {
-    mvprintw(current_node->y, current_node->x, "%c", SNAKE_CHAR);
+    attron(COLOR_PAIR(SNAKE_PAIR));
+    mvaddch(current_node->y, current_node->x, SNAKE_CHAR);
+    attroff(COLOR_PAIR(SNAKE_PAIR));
     current_node = current_node->next;
   }
 }

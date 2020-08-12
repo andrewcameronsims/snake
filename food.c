@@ -76,7 +76,9 @@ void render_food(Food *food)
   Node *current_node = food->head;
   while (current_node != NULL)
   {
-    mvprintw(current_node->y, current_node->x, "%c", FOOD_CHAR);
+    attron(COLOR_PAIR(FOOD_PAIR));
+    mvaddch(current_node->y, current_node->x, FOOD_CHAR);
+    attroff(COLOR_PAIR(FOOD_PAIR));
     current_node = current_node->next;
   }
 }

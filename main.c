@@ -24,6 +24,10 @@ void game_init()
 
 void game_loop()
 {
+  start_color();
+  init_pair(SNAKE_PAIR, COLOR_GREEN, COLOR_BLACK);
+  init_pair(FOOD_PAIR, COLOR_RED, COLOR_BLACK);
+
   Snake *snake = snake_init();
   snake_enqueue(snake, max_rows / 2, max_cols / 2);
   snake_enqueue(snake, max_rows / 2, max_cols / 2 + 1);

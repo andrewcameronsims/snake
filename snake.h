@@ -8,6 +8,7 @@
 #include "food.h"
 
 #define SNAKE_CHAR '#'
+#define SNAKE_PAIR 2
 #define DOWN 258
 #define UP 259
 #define LEFT 260

@@ -7,6 +7,7 @@
 #include "node.h"
 
 #define FOOD_CHAR 'o'
+#define FOOD_PAIR 1
 
 typedef struct {
   Node *head;
