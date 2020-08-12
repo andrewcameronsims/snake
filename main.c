@@ -18,12 +18,29 @@ void game_init()
   keypad(stdscr, 1);
   noecho();
   cbreak();
-  nodelay(stdscr, 1);
   getmaxyx(stdscr, max_rows, max_cols);
+}
+
+void intro_screen()
+{
+  mvprintw(max_rows / 2 - 7, max_cols / 2 - 15, "%s", " _____             _        ");
+  mvprintw(max_rows / 2 - 6, max_cols / 2 - 15, "%s", "/  ___|           | |       ");
+  mvprintw(max_rows / 2 - 5, max_cols / 2 - 15, "%s", "\\ `--. _ __   __ _| | _____ ");
+  mvprintw(max_rows / 2 - 4, max_cols / 2 - 15, "%s", " `--. \\ '_ \\ / _` | |/ / _ \\");
+  mvprintw(max_rows / 2 - 3, max_cols / 2 - 15, "%s", "/\\__/ / | | | (_| |   <  __/");
+  mvprintw(max_rows / 2 - 2, max_cols / 2 - 15, "%s", "\\____/|_| |_|\\__,_|_|\\_\\___|");
+
+  mvprintw(max_rows / 2, max_cols / 2 - 15, "%s", "Arrow keys to move");
+  mvprintw(max_rows / 2 + 1, max_cols / 2 - 15, "%s", "Press q to quit");
+
+  mvprintw(max_rows / 2 + 4, max_cols / 2 - 15, "%s", "You die if you hit yourself or the edge of the screen");
+  getch();
+  clear();
 }
 
 void game_loop()
 {
+  nodelay(stdscr, 1);
   start_color();
   init_pair(SNAKE_PAIR, COLOR_GREEN, COLOR_BLACK);
   init_pair(FOOD_PAIR, COLOR_RED, COLOR_BLACK);
@@ -58,6 +75,7 @@ void game_loop()
 int main(void)
 {
   game_init();
+  intro_screen();
   game_loop();
   return 0;
 }
