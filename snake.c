@@ -155,7 +155,9 @@ void feed_snake(Snake *snake, Food *food, int *score, int y_limit, int x_limit)
       food_remove(food, food_y, food_x);
       food_add(food, rand() % y_limit, rand() % x_limit);
       grow_snake(snake);
-      score++;
+      int score_int = *score;
+      score_int++;
+      *score = score_int;
       return;
     }
     current_node = current_node->next;
